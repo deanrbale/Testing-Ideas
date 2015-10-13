@@ -32,64 +32,52 @@ t.join()      # Wait for actual termination (if needed)
 import threading
 import time
 
-class timed_response():
-    
-    timed_out = False    
+class timed_response():     
     
     def __init__(self):
         self._running = True
 
     def terminate(self):
         self._running = False
+        
+    def run_response(self):
+        response = ""
+        while self._running and response == "":
+             response = str(input("Enter your decision quickly: "))
+        return response
 
-    def run(self, seconds, increment):
-        timed_out = False
+    def run_timer(self, seconds, increment):
         second = seconds
-        while self._running and second > 0:
+        time.sleep(1)
+        while self._running and second >= 0:
             if seconds == second:
                 print()
-            print("You have " + str(second) + " seconds left: " )
+            print("You have " + str(second) + " seconds left! " )
+            print()
             if second == 0:
-                timed_out = True
                 break
+                self._running = False
+                self.terminate()
             time.sleep(increment)
             second -= increment
-            
-
-#    def skip_input_after_timout(seconds,increment):
-#        """
-#        Threading function, after N seconds print something and exit program
-#        """
-#        for second in range(seconds,-1,-increment):
-#            time.sleep(increment)
-#            if seconds == second:
-#                print()
-#                print("You have " + str(second) + " seconds left: " )
-#                print("You did not enter a command quick enough!")
-#                pass
-
-def response():
-    """
-    Simple function where you ask him his name, if he answers
-    you print message and exit
-    """
-    R = input("Enter you decision quickly!!!:")
-    return R
 
 def quick_response():
     t_r = timed_response()
     # define skip_input_after_timout as a threading function, 5 as an argument
-    quick_response_thread = threading.Thread(target=t_r.run,args=(10,2,))
+    quick_response_thread = threading.Thread(target=t_r.run_timer,args=(10,2,))
     quick_response_thread.setDaemon(True)
     # start threading
     quick_response_thread.start()
     # ask him his name
-    N = None
-    N = response()
-    if N != None:
+    R = str(t_r.run_response())
+    if quick_response_thread.is_alive():
         #quick_response_thread._stop
+        t_r.terminate()
+        quick_response_thread.join()
         print("thank you")
-    input(str(N) + " Now what: ")
+    else:
+        print("too late")
+    input("")
     
 
 quick_response()
